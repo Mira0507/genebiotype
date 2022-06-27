@@ -1,0 +1,5 @@
+*.pdf
+env/
+._*
+*.html
+*.xlsx
