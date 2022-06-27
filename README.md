@@ -346,9 +346,11 @@ colnames(cleaned.df) <- c('Treatment', 'Gene_biotype', 'Count')
 # DMSO      processed_pseudogene   1744.
 # DMSO      protein_coding         2286.
 
-knitr::kable(head(cleaned.df))
+
 
 ```
+
+
 
 
 #### Plotting count of gene biotypes
@@ -380,6 +382,7 @@ ggsave(filename=file.path(output.path, "biotype_count.png"),
 ```
 
 
+
 ```r
 
 # Clean the data frame and calculate percentage
@@ -405,5 +408,33 @@ proportion.df <- cleaned.df %>%
 # DMSO            7120. processed_pseudogene   1744.         24.5
 # DMSO            7120. protein_coding         2286.         32.1
 
-knitr::kable(head(proportion.df))
+
+```
+
+
+```r
+
+# Plot
+p <- ggplot(proportion.df, aes(x=Treatment, y=Proportion, fill=Gene_biotype)) +
+    geom_bar(position="stack", stat="identity", width=0.5, aes(fill=Gene_biotype)) +
+    theme_bw() +
+    ylab("Proportion (%)")
+
+
+# Print
+print(p)
+
+
+```
+
+![biotype_proportion.png](https://github.com/Mira0507/genebiotype/blob/readme/plots/biotype_proportion.png)
+
+
+```r
+# Save
+ggsave(filename=file.path(output.path, "biotype_proportion.png"),
+       plot=p,
+       device="png")
+
+
 ```
