@@ -104,7 +104,7 @@ read.count <- readxl::read_excel(input.path, sheet=1)
 
 # Rename the first column
 colnames(read.count)[1] <- "geneid"
-
+stop()
 
 # Clean the count matrix and conver the object from data frame to matrix
 read.count <- read.count %>%
@@ -168,7 +168,7 @@ dds <- DESeqDataSetFromMatrix(countData=read.count,
 
 # Extracting normalized read counts
 
-For convenience, QC is skipped in this workflow. Check out the [DESeq2 doc](https://bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/DESeq2.html) or details about QC. For real-world analysis, QC using the function `vst()` is highly recommended in DESeq2-mediated RNA-seq.
+For convenience, QC is skipped in this workflow. Check out the [DESeq2 doc](https://bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/DESeq2.html) for details about QC. For real-world analysis, QC using the function `vst()` is highly recommended in DESeq2-mediated RNA-seq.
 
 
 In DESeq2 workflow, raw read counts are normalized by being divided by size factors which are computed per sample. The size factors reflect sequencing depth. Therefore, computing size factors using the function `estimateSizeFactors()` is performed prior to extracting the normalized counts. Run `sizeFactors(dds)` if you'd like to explore your size factors.
@@ -357,12 +357,16 @@ knitr::kable(head(cleaned.df))
 
 
 ```{r plot_count, results='asis'}
-
+# Plot
 p <- ggplot(cleaned.df, aes(x=Treatment, y=Count, fill=Gene_biotype)) +
     geom_bar(position="stack", stat="identity", width=0.5, aes(fill=Gene_biotype)) +
     theme_bw()
 
+# Print
 print(p)
+
+# Save
+# NOTE: Assign `device=pdf` and `filename="biotype_count.pdf" if you'd like to save as pdf
 ggsave(filename=file.path(output.path, "biotype_count.png"),
        plot=p,
        device="png")
@@ -375,7 +379,7 @@ ggsave(filename=file.path(output.path, "biotype_count.png"),
 
 ```{r calculate_proportion, results='asis'}
 
-
+# Clean the data frame and calculate percentage
 proportion.df <- cleaned.df %>%
     group_by(Treatment) %>%
     summarize(Total_count=sum(Count)) %>%
@@ -403,12 +407,17 @@ knitr::kable(head(proportion.df))
 
 ```{r plot_proportion, results='asis'}
 
-
+# Plot
 p <- ggplot(proportion.df, aes(x=Treatment, y=Proportion, fill=Gene_biotype)) +
     geom_bar(position="stack", stat="identity", width=0.5, aes(fill=Gene_biotype)) +
     theme_bw() +
     ylab("Proportion (%)")
 
+
+# Print
+print(p)
+
+# Save
 ggsave(filename=file.path(output.path, "biotype_proportion.png"),
        plot=p,
        device="png")
