@@ -1,6 +1,6 @@
 # Gene Biotypes
 
-`r Sys.Date()`
+6-27-2022
 
 Mira Sohn
 
@@ -312,11 +312,11 @@ biotype.df <- select(ensdb,
 
 # Add gene biotypes and sample metadata by joining data tables
 cleaned.df <- norm.counts %>%
-    inner_join(biotype.df, by=c("Genename"="GENENAME")) %>%
-    gather('Sample', 'Count', colnames(norm.counts)[-1]) %>%
-    inner_join(colData, by=c("Sample"="samplename")) %>%
-    group_by(treatment, GENEBIOTYPE) %>%
-    summarize(Count=mean(Count))
+    inner_join(biotype.df, by=c("Genename"="GENENAME")) %>%  # join retrieved biotype data frame to the count data frame
+    gather('Sample', 'Count', colnames(norm.counts)[-1]) %>%  # reshape the data frame by gathering all the counts from individual samples to a single column
+    inner_join(colData, by=c("Sample"="samplename")) %>%   # add sample metadata by joining the data frame `colData`
+    group_by(treatment, GENEBIOTYPE) %>%   # reshape the data frame to contain counts per treatment and biotype
+    summarize(Count=mean(Count))  # Count is mean of biological replicates
 
 # head(cleaned.df)
 # A tibble: 6 × 3
@@ -358,16 +358,52 @@ knitr::kable(head(cleaned.df))
 # Plot
 p <- ggplot(cleaned.df, aes(x=Treatment, y=Count, fill=Gene_biotype)) +
     geom_bar(position="stack", stat="identity", width=0.5, aes(fill=Gene_biotype)) +
-    theme_bw()
+    theme_bw() +
+    ylab("Normalized Read Counts")
 
 # Print
 print(p)
 
+
+```
+
+![biotype_count.png](https://github.com/Mira0507/genebiotype/blob/master/plots/biotype_count.png)
+
+
+```r
 # Save
 # NOTE: Assign `device=pdf` and `filename="biotype_count.pdf" if you'd like to save as pdf
 ggsave(filename=file.path(output.path, "biotype_count.png"),
        plot=p,
        device="png")
+
 ```
 
-![biotype_count.png](https://github.com/Mira0507/genebiotype/blob/master/plots/biotype_count.png)
+
+```r
+
+# Clean the data frame and calculate percentage
+proportion.df <- cleaned.df %>%
+    # Reshape the data frame to have summed counts per treatment
+    group_by(Treatment) %>%
+    summarize(Total_count=sum(Count)) %>%
+    # Add normalized counts per gene biotype by joining another `cleaned.df`
+    inner_join(cleaned.df, by='Treatment') %>%
+    # Add a new column containing percentage counts
+    mutate(Proportion=round(100*Count/Total_count, 2))
+
+
+
+# head(proportion.df)
+# A tibble: 6 × 5
+# Treatment Total_count Gene_biotype              Count Proportion
+# <chr>           <dbl> <chr>                     <dbl>      <dbl>
+# DMSO            7120. lncRNA                  145.          2.04
+# DMSO            7120. miRNA                     0.457       0.01
+# DMSO            7120. misc_RNA                  2.29        0.03
+# DMSO            7120. polymorphic_pseudogene  511.          7.18
+# DMSO            7120. processed_pseudogene   1744.         24.5
+# DMSO            7120. protein_coding         2286.         32.1
+
+knitr::kable(head(proportion.df))
+```
