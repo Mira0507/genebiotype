@@ -497,6 +497,11 @@ colnames(cleaned.df) <- c("Treatment",
 # DMSO      processed_pseudogene   1744.       80       7120.      24.5
 # DMSO      protein_coding         2286.    15348       7120.      32.1
 
+```
+
+A scatter plot is created using `ggplot2` to display total number of unique gene IDs per biotype (differentiated by color) per treatment condition (differentiated by shape) on x-axis along with proportion of each biotype on y-axis.
+
+```r
 # Plot
 p <- ggplot(cleaned.df,
             aes(x=log10(nGene), y=Proportion, shape=Treatment, color=Gene_biotype)) +
