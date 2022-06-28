@@ -280,6 +280,8 @@ ensdb <- ah[[ (mcols(ensdb) %>% rownames())[newest.ensdb] ]]
 
 #### Adding gene biotypes to the normalized count data
 
+Normalized read counts per biotype per treatment is calculated.
+
 ```r
 
 # Retrieve gene biotypes matching the input genes
@@ -355,6 +357,7 @@ colnames(cleaned.df) <- c('Treatment', 'Gene_biotype', 'Count')
 
 #### Plotting count of gene biotypes
 
+A stacked bar plot is created using `ggplot2` package to present normalized read counts per biotype across the treatment conditions.
 
 ```r
 # Plot
@@ -382,6 +385,9 @@ ggsave(filename=file.path(output.path, "biotype_count.png"),
 ```
 
 
+#### Plotting proportion of gene biotypes
+
+Proportion: 100 x (normalized counts per biotype per treatment condition) / (normalized counts per treatment condition)
 
 ```r
 
@@ -408,12 +414,6 @@ proportion.df <- cleaned.df %>%
 # DMSO            7120. processed_pseudogene   1744.         24.5
 # DMSO            7120. protein_coding         2286.         32.1
 
-
-```
-
-
-```r
-
 # Plot
 p <- ggplot(proportion.df, aes(x=Treatment, y=Proportion, fill=Gene_biotype)) +
     geom_bar(position="stack", stat="identity", width=0.5, aes(fill=Gene_biotype)) +
@@ -430,11 +430,84 @@ print(p)
 ![biotype_proportion.png](https://github.com/Mira0507/genebiotype/blob/readme/plots/biotype_proportion.png)
 
 
+
+
 ```r
 # Save
 ggsave(filename=file.path(output.path, "biotype_proportion.png"),
        plot=p,
        device="png")
 
-
 ```
+
+
+#### Plotting complexity of gene biotypes
+
+Complexity indicates total number of unique gene IDs per biotype.
+
+
+```r
+
+# Clean the data frame
+cleaned.df <- norm.counts %>%
+    # join retrieved biotype data frame to the count data frame
+    inner_join(biotype.df, by=c("Genename"="GENENAME")) %>%
+    # reshape the data frame by gathering all the counts from individual samples to a single column
+    gather('Sample', 'Count', colnames(norm.counts)[-1]) %>%
+    # add sample metadata by joining the data frame `colData`
+    inner_join(colData, by=c("Sample"="samplename")) %>%
+    # reshape the data frame to contain counts per treatment and biotype
+    group_by(treatment, GENEBIOTYPE) %>%
+    # count is mean of biological replicates and total number of unique genes per biotype per condition
+    summarize(Count=mean(Count), nGene=length(unique(GENEID))) %>%
+    # add computed proportion data by joining data frames
+    inner_join(proportion.df,
+               by=c("treatment"="Treatment", "GENEBIOTYPE"="Gene_biotype", "Count"="Count"))
+
+
+# head(cleaned.df)
+# A tibble: 6 × 6
+# Groups:   treatment [1]
+# treatment GENEBIOTYPE               Count nGene Total_count Proportion
+# <chr>     <chr>                     <dbl> <int>       <dbl>      <dbl>
+# DMSO      lncRNA                  145.     1030       7120.       2.04
+# DMSO      miRNA                     0.457     5       7120.       0.01
+# DMSO      misc_RNA                  2.29      1       7120.       0.03
+# DMSO      polymorphic_pseudogene  511.       16       7120.       7.18
+# DMSO      processed_pseudogene   1744.       80       7120.      24.5
+# DMSO      protein_coding         2286.    15348       7120.      32.1
+
+# Rename the columns
+colnames(cleaned.df) <- c("Treatment",
+                          "Gene_biotype",
+                          "Count",
+                          "nGene",
+                          "Total_count",
+                          "Proportion")
+
+# head(cleaned.df)
+# A tibble: 6 × 6
+# Groups:   treatment [1]
+# treatment GENEBIOTYPE               Count nGene Total_count Proportion
+# <chr>     <chr>                     <dbl> <int>       <dbl>      <dbl>
+# DMSO      lncRNA                  145.     1030       7120.       2.04
+# DMSO      miRNA                     0.457     5       7120.       0.01
+# DMSO      misc_RNA                  2.29      1       7120.       0.03
+# DMSO      polymorphic_pseudogene  511.       16       7120.       7.18
+# DMSO      processed_pseudogene   1744.       80       7120.      24.5
+# DMSO      protein_coding         2286.    15348       7120.      32.1
+
+# Plot
+p <- ggplot(cleaned.df,
+            aes(x=log10(nGene), y=Proportion, shape=Treatment, color=Gene_biotype)) +
+    geom_point(size=5, alpha=0.7) +
+    theme_bw() +
+    theme(legend.title=element_blank()) +
+    xlab("log10 (Number of Unique Gene IDs Expressed") +
+    ylab("Proportion (%)")
+
+# Print
+```
+
+
+![biotype_complexity.png]()

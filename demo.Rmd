@@ -362,6 +362,7 @@ knitr::kable(head(cleaned.df))
 p <- ggplot(cleaned.df, aes(x=Treatment, y=Count, fill=Gene_biotype)) +
     geom_bar(position="stack", stat="identity", width=0.5, aes(fill=Gene_biotype)) +
     theme_bw() +
+    theme(legend.title=element_blank()) +
     ylab("Normalized Read Counts")
 
 # Print
@@ -416,6 +417,7 @@ knitr::kable(head(proportion.df))
 p <- ggplot(proportion.df, aes(x=Treatment, y=Proportion, fill=Gene_biotype)) +
     geom_bar(position="stack", stat="identity", width=0.5, aes(fill=Gene_biotype)) +
     theme_bw() +
+    theme(legend.title=element_blank()) +
     ylab("Proportion (%)")
 
 
