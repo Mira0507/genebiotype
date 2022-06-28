@@ -510,4 +510,4 @@ p <- ggplot(cleaned.df,
 ```
 
 
-![biotype_complexity.png]()
+![biotype_complexity.png](https://github.com/Mira0507/genebiotype/blob/master/plots/biotype_complexity.png)
