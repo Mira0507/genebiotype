@@ -516,3 +516,13 @@ p <- ggplot(cleaned.df,
 
 
 ![biotype_complexity.png](https://github.com/Mira0507/genebiotype/blob/master/plots/biotype_complexity.png)
+
+```r
+# Save
+ggsave(filename=file.path(output.path, "biotype_complexity.png"),
+       plot=p,
+       height=6,
+       device="png")
+
+
+```
